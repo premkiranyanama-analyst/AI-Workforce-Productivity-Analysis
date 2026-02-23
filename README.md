@@ -33,15 +33,19 @@ The objective was to understand how AI adoption, manual workload, and deadline p
 
 ### Executive Overview
 KPIs including automation %, burnout, AI usage, error rate, and workforce balance.
+<img width="1940" height="1048" alt="OVERVIEW" src="https://github.com/user-attachments/assets/4f3850b5-a365-4227-b2ef-298986ee0174" />
 
 ### Burnout Analysis
 Risk segmentation and burnout trends by experience.
+<img width="1948" height="1140" alt="BURNOUT_ANALYSIS" src="https://github.com/user-attachments/assets/b815d3e7-1e79-4097-87d8-1526a68f3f05" />
 
 ### Pressure Impact Analysis
 Deadline pressure effects on burnout, errors, and automation.
+<img width="1906" height="1000" alt="PRESSURE _IMPACT_ANALYSIS" src="https://github.com/user-attachments/assets/ab3866e7-477f-4ceb-9705-78e48977e16a" />
 
 ### Executive Workforce Heatmap
 Role-level performance comparison for executive decision-making.
+<img width="1914" height="560" alt="HEATMAP" src="https://github.com/user-attachments/assets/c6ed03b9-5c61-4f65-96ed-328fceb2ac2f" />
 
 ---
 
