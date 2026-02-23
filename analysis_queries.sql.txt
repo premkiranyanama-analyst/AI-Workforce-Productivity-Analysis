@@ -1,0 +1,144 @@
+create database ai_analytics;
+use ai_analytics;
+select * from emp_ai_prod;
+select count(*) from emp_ai_prod;
+alter table emp_ai_prod rename to emp_prod_data;
+
+select * from emp_ai_prod where employee_id = null;
+
+--- Average Burnout
+select round(avg(burnout_risk_score),2) as ave_burnout from emp_prod_data;
+
+-- Average Burnout by Job role
+select job_role, round(avg(burnout_risk_score),2) as ave_burnout from emp_prod_data group by job_role;
+
+-- Comparing Manual Work and AI Work (To check if AI Usage Reduce the Manual Work)
+select round(avg(ai_tool_usage_hours_per_week),2) as avg_ai_usage, round(avg(manual_work_hours_per_week),2) as avg_manual_usage
+from emp_prod_data;
+
+-- Comparing Manual Work and AI Work (To check if AI Usage Reduce the Manual Work) by Job Role
+select job_role, round(avg(ai_tool_usage_hours_per_week),2) as avg_ai_usage, round(avg(manual_work_hours_per_week),2) as avg_manual_work
+from emp_prod_data group by job_role;
+
+-- Which jobs are most affected by Burnout?
+select job_role, round(avg(burnout_risk_score), 2) as avg_burnout from emp_prod_data group by job_role order by avg_burnout desc;
+
+-- Do employees with more experience
+Select experience_years as emp_total_experience, round(avg(burnout_risk_score), 2) as avg_burnout from emp_prod_data 
+group by emp_total_experience order by emp_total_experience desc;
+
+-- Dead Line Pressure by Manuaal Work
+select deadline_pressure_level, round(avg(manual_work_hours_per_week)) as avg_manual_work from emp_prod_data
+group by deadline_pressure_level order by field(deadline_pressure_level, 'low','medium','high');
+
+-- Dead Line Pressure by AI Usage
+select deadline_pressure_level, round(avg(ai_tool_usage_hours_per_week)) as avg_manual_work from emp_prod_data
+group by deadline_pressure_level order by field(deadline_pressure_level, 'low','medium','high');
+
+-- Error Rate based on Manual Work vs AI Work
+SELECT 
+    CASE 
+        WHEN manual_work_hours_per_week > ai_tool_usage_hours_per_week THEN 'Manual Work > AI Work'
+        ELSE 'AI Work > Manual Work'
+    END AS work_type,
+    round(AVG(error_rate_percent),2) AS avg_error_rate
+FROM emp_prod_data
+GROUP BY work_type
+ORDER BY avg_error_rate DESC;
+
+-- Deadline Pressure Level based on Manual Work vs AI Work
+SELECT 
+    CASE 
+        WHEN manual_work_hours_per_week > ai_tool_usage_hours_per_week THEN 'Manual Work > AI Work'
+        ELSE 'AI Work > Manual Work'
+    END AS work_type,
+    deadline_pressure_level,
+    round(AVG(error_rate_percent),2) AS avg_error_rate
+FROM emp_prod_data
+GROUP BY work_type, deadline_pressure_level
+ORDER BY FIELD(deadline_pressure_level, 'low', 'medium', 'high');
+
+-- Avg Burnout based on Manual Work vs AI Usage
+SELECT 
+    CASE 
+        WHEN manual_work_hours_per_week > ai_tool_usage_hours_per_week THEN 'Manual Work > AI Work'
+        ELSE 'AI Work > Manual Work'
+    END AS work_type,
+    round(AVG(burnout_risk_score),2) AS avg_burnout
+FROM emp_prod_data
+GROUP BY work_type
+ORDER BY avg_burnout DESC;
+
+-- Stress Risk Category
+
+SELECT 
+    CASE 
+        WHEN manual_work_hours_per_week > ai_tool_usage_hours_per_week 
+        THEN 'Manual Work > AI Work'
+        ELSE 'AI Work > Manual Work'
+    END AS work_type,
+
+    CASE 
+        WHEN burnout_risk_score >= 7 THEN 'High Risk'
+        WHEN burnout_risk_score >= 4 THEN 'Medium Risk'
+        ELSE 'Low Risk'
+    END AS stress_category,
+
+    COUNT(*) AS employee_count,
+    ROUND(AVG(error_rate_percent),2) AS avg_error_rate,
+    ROUND(AVG(work_life_balance_score),2) AS avg_wlb
+
+FROM emp_prod_data GROUP BY work_type, stress_category ORDER BY avg_error_rate DESC;
+
+-- AI Efficiency Score (Efficiency = Atomation + AI Usage - Errors - Manual Work)
+SELECT 
+    job_role,
+    ROUND(
+        AVG(tasks_automated_percent)
+        + AVG(ai_tool_usage_hours_per_week)
+        - AVG(error_rate_percent)
+        - AVG(manual_work_hours_per_week),
+    2) AS efficiency_score
+FROM emp_prod_data
+GROUP BY job_role
+ORDER BY efficiency_score DESC;
+
+-- Deadline Pressure Impact Matrix (Combine pressure + burnout + error + automation)
+SELECT 
+    deadline_pressure_level,
+    ROUND(AVG(burnout_risk_score),2) AS avg_burnout,
+    ROUND(AVG(error_rate_percent),2) AS avg_error,
+    ROUND(AVG(tasks_automated_percent),2) AS avg_automation
+FROM emp_prod_data GROUP BY deadline_pressure_level ORDER BY FIELD(deadline_pressure_level,'low','medium','high');
+
+
+-- Risk Flag based on multiple conditions
+SELECT Employee_ID, job_role,
+    CASE 
+        WHEN burnout_risk_score > 7 
+             AND work_life_balance_score < 4
+             AND deadline_pressure_level = 'high'
+        THEN 'Critical'
+        WHEN burnout_risk_score BETWEEN 5 AND 7
+             OR work_life_balance_score BETWEEN 4 AND 6
+             OR deadline_pressure_level = 'medium'
+        THEN 'Borderline Critical'
+        ELSE 'Normal'
+    END AS burnout_alert FROM emp_prod_data;
+    
+    
+ SELECT
+  deadline_pressure_level,
+  CASE 
+    WHEN manual_work_hours_per_week > ai_tool_usage_hours_per_week THEN 'Manual > AI'
+    ELSE 'AI > Manual'
+  END AS work_type,
+  ROUND(AVG(burnout_risk_score),2) AS avg_burnout,
+  ROUND(AVG(error_rate_percent),2) AS avg_error,
+  ROUND(AVG(tasks_automated_percent),2) AS avg_automation
+FROM emp_prod_data
+GROUP BY deadline_pressure_level, work_type
+ORDER BY FIELD(deadline_pressure_level,'low','medium','high'), work_type;   
+
+
+DESCRIBE emp_prod_data;
